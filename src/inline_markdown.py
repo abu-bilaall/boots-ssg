@@ -22,14 +22,12 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                     f"Unmatched delimiter '{delimiter}' in text: {node.text}"
                 )
 
-            delimited_nodes.extend(
-                (
-                    TextNode(part, TextType.PLAIN)
-                    if index % 2 == 0
-                    else TextNode(part, text_type)
-                )
-                for index, part in enumerate(parts)
-            )
+            for index, part in enumerate(parts):
+                if part: 
+                    if index % 2 == 0:
+                        delimited_nodes.append(TextNode(part, TextType.PLAIN))
+                    else:
+                        delimited_nodes.append(TextNode(part, text_type))
 
     return delimited_nodes
 
