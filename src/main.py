@@ -1,7 +1,6 @@
-from textnode import TextNode, TextType
+from src_to_dest import src_to_dest
 
 def main():
-    dummy_node = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-    print(dummy_node) # TextNode(This is some anchor text, link, https://www.boot.dev)
+    src_to_dest("./static", "./public")
 
 main()
