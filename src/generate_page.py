@@ -9,7 +9,7 @@ def extract_title(markdown):
     
     return match.group(1).strip()
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     from_path = os.path.abspath(from_path)
@@ -38,7 +38,9 @@ def generate_page(from_path, template_path, dest_path):
 
     # replace placeholders
     template = template.replace("{{ Title }}", title)
-    template = template.replace("{{ Content }}", html_string)
+    page = page.replace("{{ Content }}", html_string)
+    page = page.replace("href=\"/", f"href=\"{basepath}")
+    page = page.replace("src=\"/", f"src=\"{basepath}")
 
     # ensure dest. dir exists
     dest_dir = os.path.dirname(dest_path)
@@ -49,7 +51,7 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, "w") as f:
         f.write(template)
 
-def generate_pages_recursive(content_dir_path, template_path, dest_dir_path):
+def generate_pages_recursive(content_dir_path, template_path, dest_dir_path, basepath):
     print(f"Generating pages from {content_dir_path} to {dest_dir_path}")
 
     content_dir_path = os.path.abspath(content_dir_path)
@@ -72,7 +74,7 @@ def generate_pages_recursive(content_dir_path, template_path, dest_dir_path):
 
         # recurse into subdirectories
         if os.path.isdir(content_path):
-            generate_pages_recursive(content_path, template_path, dest_path)
+            generate_pages_recursive(content_path, template_path, dest_path, basepath)
 
         # process markdown files
         elif entry.endswith(".md"):
@@ -87,6 +89,8 @@ def generate_pages_recursive(content_dir_path, template_path, dest_dir_path):
 
             page = template.replace("{{ Title }}", title)
             page = page.replace("{{ Content }}", html_content)
+            page = page.replace("href=\"/", f"href=\"{basepath}")
+            page = page.replace("src=\"/", f"src=\"{basepath}")
 
             html_filename = entry.replace(".md", ".html")
             html_path = os.path.join(dest_dir_path, html_filename)
