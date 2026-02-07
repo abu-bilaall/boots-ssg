@@ -1,3 +1,5 @@
+import html
+
 class HTMLNode:
     def __init__(self, *, tag=None, value=None, children=None, props=None):
         self.tag = tag
@@ -12,7 +14,7 @@ class HTMLNode:
         if self.props is None:
             return ""
 
-        return ''.join(f' {key}="{value}"' for key, value in self.props.items()) #value should be html.escape(value, quote=True)
+        return ''.join(f' {key}="{html.escape(str(value), quote=True)}"' for key, value in self.props.items())
     
     def children_to_string(self):
         if self.children is None:
@@ -27,6 +29,7 @@ class HTMLNode:
 class LeafNode(HTMLNode):
     def __init__(self, *, tag, value, props=None):
         super().__init__(tag=tag, value=value, children=None, props=props)
+        self.value = html.escape(str(self.value), quote=True)
     
     def to_html(self):
         if self.value is None:
