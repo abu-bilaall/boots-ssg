@@ -29,7 +29,6 @@ class HTMLNode:
 class LeafNode(HTMLNode):
     def __init__(self, *, tag, value, props=None):
         super().__init__(tag=tag, value=value, children=None, props=props)
-        self.value = html.escape(str(self.value), quote=True)
     
     def to_html(self):
         if self.value is None:
