@@ -9,12 +9,27 @@ def extract_title(markdown):
     
     return match.group(1).strip()
 
-def generate_page(from_path, template_path, dest_path, basepath):
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+def is_existing_file(s):
+    return os.path.isfile(s)
+
+def generate_page(from_path, template_file_path, dest_path, basepath):
+    print(f"Generating page from {from_path} to {dest_path} using {template_file_path}")
 
     from_path = os.path.abspath(from_path)
     dest_path = os.path.abspath(dest_path)
-    template_path = os.path.abspath(template_path)
+
+    if is_existing_file(template_file_path):
+        template_path = os.path.abspath(template_file_path)
+
+        # load template
+        try:
+            with open(template_path, "r") as f:
+                template = f.read()
+        except Exception as e:
+            raise RuntimeError(f"Failed to read template file: {e}")
+    else:
+        template = template_file_path
+
     
     # read the markdown
     try:
@@ -22,14 +37,7 @@ def generate_page(from_path, template_path, dest_path, basepath):
             markdown = f.read()
     except Exception as e:
         raise RuntimeError(f"Failed to read markdown file: {e}")
-    
-    # read the template file
-    try:
-        with open(template_path, "r") as f:
-            template = f.read()
-    except Exception as e:
-        raise RuntimeError(f"Failed to read template file: {e}")
-    
+
     # convert markdown to html
     html_string = markdown_to_html_node(markdown).to_html()
 
@@ -37,7 +45,7 @@ def generate_page(from_path, template_path, dest_path, basepath):
     title = extract_title(markdown)
 
     # replace placeholders
-    template = template.replace("{{ Title }}", title)
+    page = template.replace("{{ Title }}", title)
     page = page.replace("{{ Content }}", html_string)
     page = page.replace("href=\"/", f"href=\"{basepath}")
     page = page.replace("src=\"/", f"src=\"{basepath}")
@@ -49,11 +57,9 @@ def generate_page(from_path, template_path, dest_path, basepath):
     
     # write html to dest. file
     with open(dest_path, "w") as f:
-        f.write(template)
+        f.write(page)
 
 def generate_pages_recursive(content_dir_path, template_path, dest_dir_path, basepath):
-    print(f"Generating pages from {content_dir_path} to {dest_dir_path}")
-
     content_dir_path = os.path.abspath(content_dir_path)
     template_path = os.path.abspath(template_path)
     dest_dir_path = os.path.abspath(dest_dir_path)
@@ -70,6 +76,7 @@ def generate_pages_recursive(content_dir_path, template_path, dest_dir_path, bas
 
     for entry in os.listdir(content_dir_path):
         content_path = os.path.join(content_dir_path, entry)
+        # template_path
         dest_path = os.path.join(dest_dir_path, entry)
 
         # recurse into subdirectories
@@ -78,25 +85,9 @@ def generate_pages_recursive(content_dir_path, template_path, dest_dir_path, bas
 
         # process markdown files
         elif entry.endswith(".md"):
-            try:
-                with open(content_path, "r") as f:
-                    markdown = f.read()
-            except Exception as e:
-                raise RuntimeError(f"Failed to read markdown file: {e}")
-
-            title = extract_title(markdown)
-            html_content = markdown_to_html_node(markdown).to_html()
-
-            page = template.replace("{{ Title }}", title)
-            page = page.replace("{{ Content }}", html_content)
-            page = page.replace("href=\"/", f"href=\"{basepath}")
-            page = page.replace("src=\"/", f"src=\"{basepath}")
-
             html_filename = entry.replace(".md", ".html")
             html_path = os.path.join(dest_dir_path, html_filename)
-
-            with open(html_path, "w") as f:
-                f.write(page)
+            generate_page(content_path, template, html_path, basepath)
         
         else:
             continue
